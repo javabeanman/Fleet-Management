@@ -1,0 +1,591 @@
+{
+	"info": {
+		"_postman_id": "4fcf7024-494e-449c-b1c5-9048034c042b",
+		"name": "Fleet-Management-Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Pack",
+			"item": [
+				{
+					"name": "Create Pack",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"barcode\":\"P9988000120\",\r\n    \"width\": 10,\r\n    \"length\": 10,\r\n    \"height\": 10\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/pack",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"pack"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pack by State",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/pack/by-state?state=CREATED",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"pack",
+								"by-state"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "CREATED",
+									"description": "CREATED, LOADED_INTO_SACK, LOADED, UNLOADED"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sack",
+			"item": [
+				{
+					"name": "Create Sack",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"barcode\":\"C725790\",\r\n    \"desi\": 40\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/sack/add-pack-to-sack",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"sack",
+								"add-pack-to-sack"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sack by State",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/sack/by-state?state=CREATED",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"sack",
+								"by-state"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "CREATED",
+									"description": "CREATED, LOADED, UNLOADED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Pack to Sack",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sackBarcode\":\"C725790\",\r\n    \"sackDesi\":\"40\",\r\n    \"pack\":{\r\n        \"packBarcode\":\"P9988000120\",\r\n        \"packDesi\":\"1\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/sack/by-state?state=CREATED",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"sack",
+								"by-state"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "CREATED",
+									"description": "CREATED, LOADED, UNLOADED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Pack to Sack",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sackBarcode\":\"C725790\",\r\n    \"sackDesi\":\"40\",\r\n    \"pack\":{\r\n        \"packBarcode\":\"P9988000120\",\r\n        \"packDesi\":\"1\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/sack/remove-pack-to-sack",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"sack",
+								"remove-pack-to-sack"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Vehicle",
+			"item": [
+				{
+					"name": "Create Vehicle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"plate\":\"34TL311\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"vehicle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vehicle by Plate",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vehiclePlate\":\"A123BCDE\",\r\n    \"deliveryPointCode\":\"AD3DA2GQ\",\r\n    \"sackRequests\":[\r\n        {\r\n            \"sackBarcode\":\"EXAMPLE\",\r\n            \"sackDesi\":\"40\"\r\n        }\r\n    ],\r\n    \"packRequests\":[\r\n        {\r\n            \"packBarcode\":\"EXAMPLE1236\",\r\n            \"packDesi\":\"1\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/vehicle/by-plate?plate=34TL311",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"vehicle",
+								"by-plate"
+							],
+							"query": [
+								{
+									"key": "plate",
+									"value": "34TL311"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vehicle by State",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/vehicle/by-state?state=AVAILABLE",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"vehicle",
+								"by-state"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "AVAILABLE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Delivery Points to Vehicle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vehiclePlate\":\"34TL311\",\r\n    \"deliveryPointCodes\": [\r\n        {\"deliveryPointCode\":\"DP230001\"}\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/vehicle/add-delivery-points-to-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"vehicle",
+								"add-delivery-points-to-vehicle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Delivery Points to Vehicle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vehiclePlate\":\"34TL311\",\r\n    \"deliveryPointCodes\": [\r\n        {\"deliveryPointCode\":\"DP230001\"}\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/vehicle/remove-delivery-points-to-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"vehicle",
+								"remove-delivery-points-to-vehicle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Packs and Sacks to Vehicle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vehiclePlate\":\"34TL311\",\r\n    \"deliveryPointCode\":\"DP230001\",\r\n    \"sackRequests\":[\r\n        {\r\n            \"sackBarcode\":\"C725790\",\r\n            \"sackDesi\":\"40\"\r\n        }\r\n    ],\r\n    \"packRequests\":[\r\n        {\r\n            \"packBarcode\":\"P9988000120\",\r\n            \"packDesi\":\"1\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/vehicle/add-packs-and-sacks-to-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"vehicle",
+								"add-packs-and-sacks-to-vehicle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Packs and Sacks to Vehicle",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"vehiclePlate\":\"34TL311\",\r\n    \"deliveryPointCode\":\"DP230001\",\r\n    \"sackRequests\":[\r\n        {\r\n            \"sackBarcode\":\"C725790\",\r\n            \"sackDesi\":\"40\"\r\n        }\r\n    ],\r\n    \"packRequests\":[\r\n        {\r\n            \"packBarcode\":\"P9988000120\",\r\n            \"packDesi\":\"1\"\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/vehicle/remove-packs-and-sacks-to-vehicle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"vehicle",
+								"remove-packs-and-sacks-to-vehicle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Vehicle Loading",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"plate\":\"34TL311\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/vehicle/complete-vehicle-loading",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"vehicle",
+								"complete-vehicle-loading"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delivert Point",
+			"item": [
+				{
+					"name": "Create Delivery Point",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"Example\",\r\n    \"code\":\"DP230001\",\r\n    \"placeOfDelivery\": 2 //1->BRANCH, 2->DISTRIBUTION_CENTER, 3->TRANSFER_CENTER\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/delivery-point",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"delivery-point"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Delivery Point by Code",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/delivery-point/by-code?code=DP230001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"delivery-point",
+								"by-code"
+							],
+							"query": [
+								{
+									"key": "code",
+									"value": "DP230001"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Delivery Point by PlaceOfDelivery",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/delivery-point/by-place-of-delivery?placeOfDelivery=BRANCH",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"delivery-point",
+								"by-place-of-delivery"
+							],
+							"query": [
+								{
+									"key": "placeOfDelivery",
+									"value": "BRANCH",
+									"description": "BRANCH, DISTRIBUTION_CENTER, TRANSFER_CENTER"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Distribute to Delivery Points",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"plate\":\"34TL311\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/delivery-point/distribute-to-delivery-points",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"delivery-point",
+								"distribute-to-delivery-points"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

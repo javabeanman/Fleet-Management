@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: fleet-management
+  datasource:
+    url: jdbc:postgresql://dbpostgresql:5432/fleet-management # dbpostgresql
+    username: postgres
+    password: postgres
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  main:
+    allow-bean-definition-overriding: true
+  flyway:
+    baseline-on-migrate: true
+
+
+server:
+  port: 4000
+
+logging:
+  level:
+    root: WARN
+    org.springframework.web: DEBUG
+    org.hibernate: ERROR
+    com.trendyol.fleetmanagement: DEBUG
