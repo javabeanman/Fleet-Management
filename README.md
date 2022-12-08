@@ -56,11 +56,17 @@ You can continue operations via swagger or postman.
 
 (Requested test data added.)
 
-
-
 ## Support
 
 For support, email mucahidyilmaz@protonmail.com. 
 
 Yours sincerely, 
 Mücahid YILMAZ
+
+## TO DO LIST:
+
+- Single responsibility will be provided (currently nested), methods will be reduced to sub-methods with their definitions.
+
+- All tests will be written(unit + integration)
+
+- Infrastructure for Message Brokers will be prepared, and Kafka will be added.
