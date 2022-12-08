@@ -15,13 +15,12 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class DeliveryPointService implements BaseService{
+public class DeliveryPointService {
 
     private final Logger log = LogManager.getLogger(this.getClass());
 
@@ -47,7 +46,7 @@ public class DeliveryPointService implements BaseService{
         boolean registeredCode = deliveryPointRepository.existsByCode(request.code());
 
         if(registeredCode){
-            throw new FleetManagementException(ErrorMessage.DELIVERY_POINT_ALREADY_EXIST);
+            throw new FleetManagementException(ErrorMessage.DELIVERY_POINT_ALREADY_EXIST, request.code());
         }
 
         DeliveryPoint deliveryPoint = new DeliveryPoint.Builder()
@@ -73,64 +72,97 @@ public class DeliveryPointService implements BaseService{
 
     @Transactional(value = Transactional.TxType.REQUIRED)
     public Set<DeliveryPointDto> distributeToDeliveryPoints(VehicleRequest request) throws FleetManagementException {
-        return vehicleService.getVehicle(request.plate())
-                .stream()
-                .map(vehicle -> throwErrorIfNotThisState(vehicle, VehicleState.LOADED))
-                .peek(vehicle -> vehicle.getDeliveryPoints()
-                        .stream()
-                        .peek(deliveryPoint -> vehicle.getSacks()
-                                .stream()
-                                .filter(sack -> Objects.equals(sack.getDeliveryPointCode(), deliveryPoint.getCode()))
-                                .filter(sack -> !Objects.equals(deliveryPoint.getPlaceOfDelivery(), PlaceOfDelivery.BRANCH.getValue()))
-                                .forEach(sack -> addSackToDeliveryPoint(vehicle, deliveryPoint, sack)))
-                        .peek(deliveryPoint -> vehicle.getPacks()
-                                .stream()
-                                .filter(pack -> Objects.equals(pack.getDeliveryPointCode(), deliveryPoint.getCode()))
-                                .filter(pack -> !Objects.equals(deliveryPoint.getPlaceOfDelivery(), PlaceOfDelivery.TRANSFER_CENTER.getValue()))
-                                .forEach(pack -> addPackToDeliveryPoint(vehicle, deliveryPoint, pack)))
-                        .peek(deliveryPoint -> {
-                            if(Stream.concat(vehicle.getSacks().stream().map(Sack::getDeliveryPointCode), vehicle.getPacks().stream().map(Pack::getDeliveryPointCode))
-                                    .noneMatch(code -> Objects.equals(code, deliveryPoint.getCode()))){
-                                deliveryPoint.getVehicles().remove(vehicle);
-                            }
-                        })
-                        .forEach(deliveryPointRepository::save))
-                .peek(vehicle -> {
-                    if(vehicle.getSacks().isEmpty() && vehicle.getPacks().isEmpty())
-                        vehicleService.changeVehicleState(vehicle, VehicleState.AVAILABLE);
-                    else
-                        vehicleService.changeVehicleState(vehicle, VehicleState.FAULTY_LOADS_LEFT_IN_VEHICLE);
-                })
+        return vehicleService.distributeVehicle(request.plate())
                 .map(Vehicle::getDeliveryPoints)
                 .map(deliveryPoints -> deliveryPoints
                         .stream()
                         .map(deliveryPointConverter::convertWithAllParam)
                         .collect(Collectors.toSet()))
                 .findFirst()
-                .orElseThrow(() -> new FleetManagementException(ErrorMessage.VEHICLE_NOT_FOUND));
+                .orElseThrow(() -> new FleetManagementException(ErrorMessage.VEHICLE_NOT_FOUND, request.plate()));
     }
 
-    private void addSackToDeliveryPoint(Vehicle vehicle, DeliveryPoint deliveryPoint, Sack sack) {
-        vehicle.getSacks().remove(sack);
-        log.info("Sack removed to Vehicle.");
+    protected void saveDeliveryPoint(DeliveryPoint deliveryPoint) {
+        deliveryPointRepository.save(deliveryPoint);
+    }
 
+    protected void distributeSacks(Set<Sack> sacks, DeliveryPoint deliveryPoint, Vehicle vehicle) {
+        sacks.stream()
+                .filter(sack -> Objects.equals(sack.getDeliveryPointCode(), deliveryPoint.getCode()))
+                .filter(sack -> !Objects.equals(deliveryPoint.getPlaceOfDelivery(), PlaceOfDelivery.BRANCH.getValue()))
+                .peek(sack -> vehicleService.removeSackToVehicle(vehicle, sack))
+                .peek(sack -> sackService.changeSackState(sack, SackState.UNLOADED))
+                .forEach(sack -> addSackToDeliveryPoint(deliveryPoint, sack));
+    }
+
+    protected void distributePacks(Set<Pack> packs, DeliveryPoint deliveryPoint, Vehicle vehicle) {
+        packs.stream()
+                .filter(pack -> Objects.equals(pack.getDeliveryPointCode(), deliveryPoint.getCode()))
+                .filter(pack -> !Objects.equals(deliveryPoint.getPlaceOfDelivery(), PlaceOfDelivery.TRANSFER_CENTER.getValue()))
+                .peek(pack -> vehicleService.removePackToVehicle(vehicle, pack))
+                .peek(pack -> packService.changePackState(pack, PackState.UNLOADED))
+                .forEach(pack -> addPackToDeliveryPoint(deliveryPoint, pack));
+    }
+
+    private void addSackToDeliveryPoint(DeliveryPoint deliveryPoint, Sack sack) {
         deliveryPoint.getSacks().add(sack);
         log.info("Sack added to Delivery Point.");
-
-        sackService.changeSackState(sack, SackState.UNLOADED);
     }
 
-    private void addPackToDeliveryPoint(Vehicle vehicle, DeliveryPoint deliveryPoint, Pack pack) {
-        vehicle.getPacks().remove(pack);
-        log.info("Pack removed to Vehicle.");
-
+    private void addPackToDeliveryPoint(DeliveryPoint deliveryPoint, Pack pack) {
         deliveryPoint.getPacks().add(pack);
         log.info("Pack added to Delivery Point.");
-
-        packService.changePackState(pack, PackState.UNLOADED);
     }
 
-    protected Optional<DeliveryPoint> getDeliveryPoint(String code) {
-        return deliveryPointRepository.findByCode(code);
+    protected DeliveryPoint takeDeliveryPointToAdd(Set<DeliveryPoint> deliveryPoints, String code) {
+        return deliveryPointRepository.findByCode(code)
+                .stream()
+                .map(deliveryPoint -> throwErrorIfAnyMatch(deliveryPoints, deliveryPoint))
+                .peek(deliveryPoint -> log.info("Delivery Point added to Vehicle."))
+                .findFirst()
+                .orElseThrow(() -> new FleetManagementException(ErrorMessage.DELIVERY_POINT_NOT_FOUND, code));
+    }
+
+    protected DeliveryPoint takeDeliveryPointToRemove(Set<DeliveryPoint> deliveryPoints, String code) {
+        return deliveryPointRepository.findByCode(code)
+                .stream()
+                .map(deliveryPoint -> throwErrorIfNoneMatch(deliveryPoints, deliveryPoint))
+                .peek(deliveryPoint -> log.info("Delivery Point removed to Vehicle."))
+                .findFirst()
+                .orElseThrow(() -> new FleetManagementException(ErrorMessage.DELIVERY_POINT_NOT_FOUND, code));
+    }
+
+    private DeliveryPoint throwErrorIfAnyMatch(Set<DeliveryPoint> deliveryPoints, DeliveryPoint deliveryPoint) {
+        if (deliveryPoints.stream().anyMatch(dp -> Objects.equals(dp, deliveryPoint)))
+            throw new FleetManagementException(ErrorMessage.THIS_CONTAINS_THIS, Vehicle.class.getSimpleName(), DeliveryPoint.class.getSimpleName());
+
+        return deliveryPoint;
+    }
+
+    protected void throwErrorIfNoneMatch(Set<DeliveryPoint> deliveryPoints, String code) {
+        deliveryPointRepository.findByCode(code)
+                .stream()
+                .map(deliveryPoint -> throwErrorIfNoneMatch(deliveryPoints, deliveryPoint))
+                .findFirst()
+                .orElseThrow(() -> new FleetManagementException(ErrorMessage.DELIVERY_POINT_NOT_FOUND, code));
+    }
+
+    private DeliveryPoint throwErrorIfNoneMatch(Set<DeliveryPoint> deliveryPoints, DeliveryPoint deliveryPoint) {
+        if (deliveryPoints.stream().noneMatch(dp -> Objects.equals(dp, deliveryPoint)))
+            throw new FleetManagementException(ErrorMessage.THIS_DOES_NOT_CONTAIN_THIS, Vehicle.class.getSimpleName(), DeliveryPoint.class.getSimpleName());
+
+        return deliveryPoint;
+    }
+
+    protected void throwErrorIfAnyMatch(DeliveryPoint deliveryPoint, Vehicle vehicle){
+        if(Stream.concat(vehicle.getSacks().stream().map(Sack::getDeliveryPointCode), vehicle.getPacks().stream().map(Pack::getDeliveryPointCode))
+                .noneMatch(code -> Objects.equals(code, deliveryPoint.getCode()))){
+            removeVehicleToDeliveryPoint(deliveryPoint, vehicle);
+        }
+    }
+
+    private void removeVehicleToDeliveryPoint(DeliveryPoint deliveryPoint, Vehicle vehicle) {
+        deliveryPoint.getVehicles().remove(vehicle);
+        log.info("Vehicle removed to Delivery Point.");
     }
 }

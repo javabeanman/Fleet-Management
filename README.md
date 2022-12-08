@@ -65,8 +65,10 @@ Mücahid YILMAZ
 
 ## TO DO LIST:
 
-- Single responsibility will be provided (currently nested), methods will be reduced to sub-methods with their definitions.
+- Single responsibility will be provided (currently nested), methods will be reduced to sub-methods with their definitions. ✔️(done)
 
 - All tests will be written(unit + integration)
 
 - Infrastructure for Message Brokers will be prepared, and Kafka will be added.
+
+Copyright (C) 2022 Mücahid Yılmaz

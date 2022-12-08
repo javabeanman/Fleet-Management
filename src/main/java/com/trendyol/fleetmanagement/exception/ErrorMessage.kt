@@ -18,7 +18,7 @@ enum class ErrorMessage(val message: String) {
 
     SACK_CANNOT_BE_USED("Sack with Barcode {1} and Desi {0} is not in state {2}. This Sack cannot be used."),
 
-    VEHICLE_CANNOT_BE_USED("Vehicle with {0} Plate is not in state {1}. This Vehicle cannot be used."),
+    VEHICLE_CANNOT_BE_USED("Vehicle with Plate {0} is not in state {1}. This Vehicle cannot be used."),
 
     THIS_CONTAINS_THIS("This {0} contains this {1}. Please check and try again."),
 

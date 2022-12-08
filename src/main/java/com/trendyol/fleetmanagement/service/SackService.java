@@ -5,9 +5,9 @@ import com.trendyol.fleetmanagement.dto.converter.SackConverter;
 import com.trendyol.fleetmanagement.exception.ErrorMessage;
 import com.trendyol.fleetmanagement.exception.FleetManagementException;
 import com.trendyol.fleetmanagement.model.Pack;
-import com.trendyol.fleetmanagement.model.PackState;
 import com.trendyol.fleetmanagement.model.Sack;
 import com.trendyol.fleetmanagement.model.SackState;
+import com.trendyol.fleetmanagement.model.Vehicle;
 import com.trendyol.fleetmanagement.repository.SackRepository;
 import com.trendyol.fleetmanagement.request.PackToSackRequest;
 import com.trendyol.fleetmanagement.request.SackRequest;
@@ -16,12 +16,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
-public class SackService implements BaseService{
+public class SackService {
 
     private final Logger log = LogManager.getLogger(this.getClass());
 
@@ -58,16 +57,8 @@ public class SackService implements BaseService{
         return sackRepository.findFirstBySackBarcodeAndDesiOrderByCreatedAtDesc(request.sackBarcode(), request.sackDesi())
                 .stream()
                 .map(sack -> throwErrorIfNotThisState(sack, SackState.CREATED))
-                .peek(sack -> {
-                    if(sack.getFreeDesi() < request.pack().packDesi())
-                        throw new FleetManagementException(ErrorMessage.NOT_ENOUGH_SPACE_IN_SACK);
-                })
-                .peek(sack -> packService.getPack(request.pack().packBarcode(), request.pack().packDesi())
-                        .stream()
-                        .map(pack -> throwErrorIfNotThisState(pack, PackState.CREATED))
-                        .peek(pack -> addPackInSack(sack, pack))
-                        .findFirst()
-                        .orElseThrow(() -> new FleetManagementException(ErrorMessage.PACK_NOT_FOUND, request.pack().packBarcode(), request.pack().packDesi())))
+                .peek(sack -> isThereDesiInSack(sack.getFreeDesi(), request.pack().packDesi()))
+                .peek(sack -> putItInSack(sack, request.pack().packBarcode(), request.pack().packDesi()))
                 .findFirst()
                 .map(sackConverter::convertWithAllParam)
                 .orElseThrow(() -> new FleetManagementException(ErrorMessage.SACK_NOT_FOUND, request.sackBarcode(), request.sackDesi()));
@@ -78,50 +69,53 @@ public class SackService implements BaseService{
         return sackRepository.findFirstBySackBarcodeAndDesiOrderByCreatedAtDesc(request.sackBarcode(), request.sackDesi())
                 .stream()
                 .map(sack -> throwErrorIfNotThisState(sack, SackState.CREATED))
-                .peek(sack ->
-                    packService.getPack(request.pack().packBarcode(), request.pack().packDesi())
-                        .stream()
-                        .map(pack -> throwErrorIfDoesNotContain(sack.getPacks(), pack))
-                        .peek(pack -> removePackInSack(sack, pack))
-                        .findFirst()
-                        .orElseThrow(() -> new FleetManagementException(ErrorMessage.PACK_NOT_FOUND, request.pack().packBarcode(), request.pack().packDesi())))
+                .peek(sack -> takeItOutInSack(sack, request.pack().packBarcode(), request.pack().packDesi()))
                 .findFirst()
                 .map(sackConverter::convertWithAllParam)
                 .orElseThrow(() -> new FleetManagementException(ErrorMessage.SACK_NOT_FOUND, request.sackBarcode(), request.sackDesi()));
     }
 
-    private void addPackInSack(Sack sack, Pack pack) {
-
-        packService.changePackState(pack, PackState.LOADED_INTO_SACK);
+    private void putItInSack(Sack sack, String packBarcode, int packDesi) {
+        Pack pack = packService.takeToAddPack(packBarcode, packDesi);
 
         sack.getPacks().add(pack);
         sack.setSize(sack.getSize() + 1);
         sack.setFreeDesi(sack.getFreeDesi() - pack.getDesi());
         sackRepository.save(sack);
+
         log.info("Pack added to Sack.");
     }
 
-    private void removePackInSack(Sack sack, Pack pack) {
-
-        packService.changePackState(pack, PackState.CREATED);
+    private void takeItOutInSack(Sack sack, String packBarcode, int packDesi) {
+        Pack pack = packService.takeToUnpack(sack.getPacks(), packBarcode, packDesi);
 
         sack.getPacks().remove(pack);
         sack.setSize(sack.getSize() - 1);
         sack.setFreeDesi(sack.getFreeDesi() + pack.getDesi());
         sackRepository.save(sack);
+
         log.info("Pack removed to Sack.");
     }
 
-    @NotNull
-    private Pack throwErrorIfDoesNotContain(Set<Pack> packs, Pack pack) {
-        if (!packs.contains(pack))
-            throw new FleetManagementException(ErrorMessage.THIS_CONTAINS_THIS, Sack.class, Pack.class);
-
-        return pack;
+    protected Sack takeSackToPutInVehicle(Set<Sack> sacks, String sackBarcode, int sackDesi, String code) {
+        return sackRepository.findFirstBySackBarcodeAndDesiOrderByCreatedAtDesc(sackBarcode, sackDesi)
+                .stream()
+                .peek(this::throwErrorIfSackIsEmpty)
+                .map(sack -> throwErrorIfNotThisState(sack, SackState.CREATED))
+                .map(sack -> throwErrorIfAnyMatch(sacks, sack))
+                .peek(sack -> changeSackStateAndDeliveryPointCode(sack, SackState.CREATED, code))
+                .findFirst()
+                .orElseThrow(() -> new FleetManagementException(ErrorMessage.SACK_NOT_FOUND, sackBarcode, sackDesi));
     }
 
-    protected Optional<Sack> getSack(String sackBarcode, int desi) {
-        return sackRepository.findFirstBySackBarcodeAndDesiOrderByCreatedAtDesc(sackBarcode, desi);
+    protected Sack takeSackToRemoveInVehicle(Set<Sack> sacks, String sackBarcode, int sackDesi) {
+        return sackRepository.findFirstBySackBarcodeAndDesiOrderByCreatedAtDesc(sackBarcode, sackDesi)
+                .stream()
+                .map(sack -> throwErrorIfNotThisState(sack, SackState.LOADED))
+                .map(sack -> throwErrorIfNoneMatch(sacks,sack))
+                .peek(sack -> changeSackStateAndDeliveryPointCode(sack, SackState.CREATED, null))
+                .findFirst()
+                .orElseThrow(() -> new FleetManagementException(ErrorMessage.SACK_NOT_FOUND, sackBarcode, sackDesi));
     }
 
     protected void changeSackState(Sack sack, SackState state) {
@@ -137,5 +131,36 @@ public class SackService implements BaseService{
         sackRepository.save(sack);
 
         log.info("Sack state changed to {}.", state);
+    }
+
+    private void isThereDesiInSack(int freeDesiInSack, int packDesi) {
+        if(freeDesiInSack < packDesi)
+            throw new FleetManagementException(ErrorMessage.NOT_ENOUGH_SPACE_IN_SACK);
+    }
+
+    protected void throwErrorIfSackIsEmpty(Sack sack){
+        if(sack.getSize() == 0)
+            throw new FleetManagementException(ErrorMessage.EMPTY_SACKS_CANNOT_BE_ADDED, sack.getSackBarcode(), sack.getDesi());
+    }
+
+    public Sack throwErrorIfNotThisState(Sack sack, SackState sackState) {
+        if (sackState.getValue() != sack.getState())
+            throw new FleetManagementException(ErrorMessage.SACK_CANNOT_BE_USED, sack.getSackBarcode(), sack.getDesi(), sackState.name());
+
+        return sack;
+    }
+
+    private Sack throwErrorIfAnyMatch(Set<Sack> sacks, Sack sack) {
+        if (sacks.stream().anyMatch(s -> Objects.equals(s, sack)))
+            throw new FleetManagementException(ErrorMessage.THIS_CONTAINS_THIS, Vehicle.class.getSimpleName(), Sack.class.getSimpleName());
+
+        return sack;
+    }
+
+    private Sack throwErrorIfNoneMatch(Set<Sack> sacks, Sack sack) {
+        if (sacks.stream().noneMatch(s -> Objects.equals(s, sack)))
+            throw new FleetManagementException(ErrorMessage.THIS_DOES_NOT_CONTAIN_THIS, Vehicle.class.getSimpleName(), Sack.class.getSimpleName());
+
+        return sack;
     }
 }
