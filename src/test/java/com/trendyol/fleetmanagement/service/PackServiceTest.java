@@ -14,7 +14,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,36 +64,5 @@ class PackServiceTest extends TestSupport {
         assertEquals(packDtos, result);
         verify(packRepository).findByStateOrderByCreatedAtDesc(PackState.CREATED.getValue());
         verify(packConverter).convert(packs);
-    }
-
-    @Test
-    void getPack_IsItSuccess_ReturnPackDto() {
-        Pack getPack = generatePacks(1, PackState.CREATED).iterator().next();
-
-        when(packRepository.findFirstByBarcodeAndAndDesiOrderByCreatedAtDesc("P9988000121",1)).thenReturn(Optional.of(getPack));
-
-        Optional<Pack> result = packService.getPack("P9988000121",1);
-
-        assertEquals(Optional.of(getPack), result);
-
-        verify(packRepository).findFirstByBarcodeAndAndDesiOrderByCreatedAtDesc("P9988000121",1);
-    }
-
-    @Test
-    void changePackState_IsItSuccess_Ok() {
-        Pack pack = generatePacks(1, PackState.CREATED).iterator().next();
-
-        when(packRepository.save(Mockito.any(Pack.class))).thenReturn(pack);
-
-        packService.changePackState(pack, PackState.CREATED);
-    }
-
-    @Test
-    void changePackStateAndDeliveryPointCode_IsItSuccess_Ok() {
-        Pack pack = generatePacks(1, PackState.CREATED).iterator().next();
-
-        when(packRepository.save(Mockito.any(Pack.class))).thenReturn(pack);
-
-        packService.changePackStateAndDeliveryPointCode(pack, PackState.UNLOADED, "DP230001");
     }
 }

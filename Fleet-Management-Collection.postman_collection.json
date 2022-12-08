@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "4fcf7024-494e-449c-b1c5-9048034c042b",
+		"_postman_id": "40fe4e2b-97d7-4c9c-9941-52f908504467",
 		"name": "Fleet-Management-Collection",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12804488"
 	},
 	"item": [
 		{
@@ -87,6 +88,65 @@
 							}
 						},
 						"url": {
+							"raw": "http://localhost:4000/api/v1/sack",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"sack"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sack by State",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/sack/by-state?state=LOADED",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"sack",
+								"by-state"
+							],
+							"query": [
+								{
+									"key": "state",
+									"value": "LOADED",
+									"description": "CREATED, LOADED, UNLOADED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Pack to Sack",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"sackBarcode\":\"C725790\",\r\n    \"sackDesi\":\"40\",\r\n    \"pack\":{\r\n        \"packBarcode\":\"P9988000121\",\r\n        \"packDesi\":\"1\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
 							"raw": "http://localhost:4000/api/v1/sack/add-pack-to-sack",
 							"protocol": "http",
 							"host": [
@@ -104,83 +164,13 @@
 					"response": []
 				},
 				{
-					"name": "Get Sack by State",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:4000/api/v1/sack/by-state?state=CREATED",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"sack",
-								"by-state"
-							],
-							"query": [
-								{
-									"key": "state",
-									"value": "CREATED",
-									"description": "CREATED, LOADED, UNLOADED"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Add Pack to Sack",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"sackBarcode\":\"C725790\",\r\n    \"sackDesi\":\"40\",\r\n    \"pack\":{\r\n        \"packBarcode\":\"P9988000120\",\r\n        \"packDesi\":\"1\"\r\n    }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:4000/api/v1/sack/by-state?state=CREATED",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"sack",
-								"by-state"
-							],
-							"query": [
-								{
-									"key": "state",
-									"value": "CREATED",
-									"description": "CREATED, LOADED, UNLOADED"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Remove Pack to Sack",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"sackBarcode\":\"C725790\",\r\n    \"sackDesi\":\"40\",\r\n    \"pack\":{\r\n        \"packBarcode\":\"P9988000120\",\r\n        \"packDesi\":\"1\"\r\n    }\r\n}",
+							"raw": "{\r\n    \"sackBarcode\":\"C725790\",\r\n    \"sackDesi\":\"40\",\r\n    \"pack\":{\r\n        \"packBarcode\":\"P9988000121\",\r\n        \"packDesi\":\"1\"\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -216,7 +206,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"plate\":\"34TL311\"\r\n}",
+							"raw": "{\r\n    \"plate\":\"34TL312\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -241,21 +231,9 @@
 				},
 				{
 					"name": "Get Vehicle by Plate",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"vehiclePlate\":\"A123BCDE\",\r\n    \"deliveryPointCode\":\"AD3DA2GQ\",\r\n    \"sackRequests\":[\r\n        {\r\n            \"sackBarcode\":\"EXAMPLE\",\r\n            \"sackDesi\":\"40\"\r\n        }\r\n    ],\r\n    \"packRequests\":[\r\n        {\r\n            \"packBarcode\":\"EXAMPLE1236\",\r\n            \"packDesi\":\"1\"\r\n        }\r\n    ]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
 							"raw": "http://localhost:4000/api/v1/vehicle/by-plate?plate=34TL311",
 							"protocol": "http",
@@ -300,7 +278,8 @@
 							"query": [
 								{
 									"key": "state",
-									"value": "AVAILABLE"
+									"value": "AVAILABLE",
+									"description": "AVAILABLE, LOADING, LOADED, FAULTY_LOADS_LEFT_IN_VEHICLE"
 								}
 							]
 						}
@@ -314,7 +293,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"vehiclePlate\":\"34TL311\",\r\n    \"deliveryPointCodes\": [\r\n        {\"deliveryPointCode\":\"DP230001\"}\r\n    ]\r\n}",
+							"raw": "{\r\n    \"vehiclePlate\":\"34TL312\",\r\n    \"deliveryPointCodes\": [\r\n        {\"deliveryPointCode\":\"DP230002\"}\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -345,7 +324,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"vehiclePlate\":\"34TL311\",\r\n    \"deliveryPointCodes\": [\r\n        {\"deliveryPointCode\":\"DP230001\"}\r\n    ]\r\n}",
+							"raw": "{\r\n    \"vehiclePlate\":\"34TL312\",\r\n    \"deliveryPointCodes\": [\r\n        {\"deliveryPointCode\":\"DP230002\"}\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -376,7 +355,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"vehiclePlate\":\"34TL311\",\r\n    \"deliveryPointCode\":\"DP230001\",\r\n    \"sackRequests\":[\r\n        {\r\n            \"sackBarcode\":\"C725790\",\r\n            \"sackDesi\":\"40\"\r\n        }\r\n    ],\r\n    \"packRequests\":[\r\n        {\r\n            \"packBarcode\":\"P9988000120\",\r\n            \"packDesi\":\"1\"\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"vehiclePlate\":\"34TL312\",\r\n    \"deliveryPointCode\":\"DP230002\",\r\n    \"sackRequests\":[\r\n        {\r\n            \"sackBarcode\":\"C725790\",\r\n            \"sackDesi\":\"40\"\r\n        }\r\n    ],\r\n    \"packRequests\":[\r\n        {\r\n            \"packBarcode\":\"P9988000120\",\r\n            \"packDesi\":\"1\"\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -438,7 +417,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"plate\":\"34TL311\"\r\n}",
+							"raw": "{\r\n    \"plate\":\"34TL312\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -474,7 +453,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\":\"Example\",\r\n    \"code\":\"DP230001\",\r\n    \"placeOfDelivery\": 2 //1->BRANCH, 2->DISTRIBUTION_CENTER, 3->TRANSFER_CENTER\r\n}",
+							"raw": "{\r\n    \"name\":\"Example\",\r\n    \"code\":\"DP230002\",\r\n    \"placeOfDelivery\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -561,7 +540,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"plate\":\"34TL311\"\r\n}",
+							"raw": "{\r\n    \"plate\":\"34TL312\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
